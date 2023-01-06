@@ -18,6 +18,7 @@
 package ethconfig
 
 import (
+	"github.com/ethereum/go-ethereum/consensus/hotstuff"
 	"math/big"
 	"os"
 	"os/user"
@@ -211,6 +212,9 @@ func CreateConsensusEngine(stack *node.Node, chainConfig *params.ChainConfig, co
 	// If proof-of-authority is requested, set it up
 	if chainConfig.Clique != nil {
 		return clique.New(chainConfig.Clique, db)
+	}
+	if chainConfig.HotStuff != nil {
+		return hotstuff.New(stack.Config().NodeKey(), stack.Config().ConsensusKey())
 	}
 	// Otherwise assume proof-of-work
 	switch config.PowMode {

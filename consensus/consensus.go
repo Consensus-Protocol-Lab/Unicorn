@@ -125,3 +125,14 @@ type PoW interface {
 	// Hashrate returns the current mining hashrate of a PoW consensus engine.
 	Hashrate() float64
 }
+
+// Hotstuff is a consensus engine based on proof-of-work.
+type Hotstuff interface {
+	Engine
+
+	// Start starts the engine
+	Start(chain ChainReader, currentBlock func() *types.Block) error
+
+	// Stop stops the engine
+	Stop() error
+}

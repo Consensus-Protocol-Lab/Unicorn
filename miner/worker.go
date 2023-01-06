@@ -305,6 +305,10 @@ func (w *worker) pendingBlockAndReceipts() (*types.Block, types.Receipts) {
 // start sets the running status as 1 and triggers new work submitting.
 func (w *worker) start() {
 	atomic.StoreInt32(&w.running, 1)
+	if hotstuff, ok := w.engine.(consensus.Hotstuff); ok {
+		hotstuff.Start(w.chain, w.chain.CurrentBlock)
+	}
+
 	w.startCh <- struct{}{}
 }
 
