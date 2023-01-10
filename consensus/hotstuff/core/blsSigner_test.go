@@ -1,45 +1,56 @@
 package core
 
 import (
+	"github.com/ethereum/go-ethereum/crypto"
+	blst "github.com/prysmaticlabs/prysm/v3/crypto/bls/blst"
+	"github.com/prysmaticlabs/prysm/v3/crypto/bls/common"
 	"github.com/stretchr/testify/assert"
-	blst "github.com/supranational/blst/bindings/go"
+	"reflect"
 	"testing"
 )
 
 func TestBlsSignVerify(t *testing.T) {
-
-	blsSigner := NewBlsSigner(generateKey())
+	sk, _ := generateKey()
+	blsSigner := NewBlsSigner(&sk, nil)
 	msg := []byte{0x11, 0x22}
-	wrongMsg := []byte{0x22, 0x22}
+	msgHash := crypto.Keccak256(msg)
+	t.Log(len(msgHash))
+	//wrongMsg := []byte{0x22, 0x22}
 	sig := blsSigner.Sign(msg)
-	t.Log(sig.Verify(false, blsSigner.PublicKey, false, msg, dst))
-	t.Log(sig.Verify(false, blsSigner.PublicKey, false, wrongMsg, dst))
+	t.Log(len(sig.Marshal()))
+	t.Log(reflect.TypeOf(sig))
+	//t.Log(sig.Verify(false, BlsSigner.ConsensusPublicKey, false, msg, dst))
+	//t.Log(sig.Verify(false, BlsSigner.ConsensusPublicKey, false, wrongMsg, dst))
 }
 
 func TestBlsAggregateSignVerify(t *testing.T) {
 
-	msg := []byte{0x11, 0x22}
-	wrongMsg := []byte{0x22, 0x22}
+	msg := [32]byte{0x11, 0x22}
+	wrongMsg := [32]byte{0x22, 0x22}
+	keyGen := func() *common.SecretKey {
+		k, _ := blst.RandKey()
+		return &k
+	}
 	testSuite := []struct {
 		signer *BlsSigner
 	}{
 		{
-			NewBlsSigner(generateKey()),
+			NewBlsSigner(keyGen(), nil),
 		},
 		{
-			NewBlsSigner(generateKey()),
+			NewBlsSigner(keyGen(), nil),
 		},
 	}
-	sigs := make([]*blst.P2Affine, len(testSuite))
-	pubKeys := make([]*blst.P1Affine, len(testSuite))
+	sigs := make([]common.Signature, len(testSuite))
+	pubKeys := make([]common.PublicKey, len(testSuite))
 	for i, testCase := range testSuite {
-		sig := testCase.signer.Sign(msg)
+		sig := testCase.signer.Sign(msg[:])
 		sigs[i] = sig
-		pubKeys[i] = testCase.signer.PublicKey
+		pubKeys[i] = *testCase.signer.ConsensusPublicKey
 	}
-	aggSig := testSuite[0].signer.AggregateSignatures(sigs)
-	res := testSuite[0].signer.FastAggregateVerify(aggSig, pubKeys, msg)
-	assert.Equal(t, true, res, "verify passed")
-	wrongRes := testSuite[0].signer.FastAggregateVerify(aggSig, pubKeys, wrongMsg)
-	assert.Equal(t, false, wrongRes, "verify failed")
+	testSuite[0].signer.aggSignatures = testSuite[0].signer.AggregateSignatures(sigs)
+	res := testSuite[0].signer.FastAggregateVerify(pubKeys, msg)
+	assert.Equal(t, true, res, "did not verify")
+	wrongRes := testSuite[0].signer.FastAggregateVerify(pubKeys, wrongMsg)
+	assert.Equal(t, false, wrongRes, "verify passed")
 }

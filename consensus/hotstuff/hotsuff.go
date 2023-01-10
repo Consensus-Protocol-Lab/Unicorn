@@ -3,10 +3,12 @@ package hotstuff
 import (
 	"crypto/ecdsa"
 	"github.com/ethereum/go-ethereum/consensus"
+	"github.com/ethereum/go-ethereum/consensus/hotstuff/config"
 	hotstuffEngine "github.com/ethereum/go-ethereum/consensus/hotstuff/engine"
-	blst "github.com/supranational/blst/bindings/go"
+	"github.com/ethereum/go-ethereum/ethdb"
+	"github.com/prysmaticlabs/prysm/v3/crypto/bls/common"
 )
 
-func New(privateKey *ecdsa.PrivateKey, consensusKey *blst.SecretKey) consensus.Hotstuff {
-	return hotstuffEngine.New(privateKey, consensusKey)
+func New(privateKey *ecdsa.PrivateKey, consensusKey *common.SecretKey, config *config.Config, db ethdb.Database) consensus.Hotstuff {
+	return hotstuffEngine.New(privateKey, consensusKey, config, db)
 }

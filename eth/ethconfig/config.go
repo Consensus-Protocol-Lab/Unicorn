@@ -19,6 +19,7 @@ package ethconfig
 
 import (
 	"github.com/ethereum/go-ethereum/consensus/hotstuff"
+	config2 "github.com/ethereum/go-ethereum/consensus/hotstuff/config"
 	"math/big"
 	"os"
 	"os/user"
@@ -214,7 +215,7 @@ func CreateConsensusEngine(stack *node.Node, chainConfig *params.ChainConfig, co
 		return clique.New(chainConfig.Clique, db)
 	}
 	if chainConfig.HotStuff != nil {
-		return hotstuff.New(stack.Config().NodeKey(), stack.Config().ConsensusKey())
+		return hotstuff.New(stack.Config().NodeKey(), stack.Config().ConsensusKey(), config2.DefaultBasicConfig, db)
 	}
 	// Otherwise assume proof-of-work
 	switch config.PowMode {

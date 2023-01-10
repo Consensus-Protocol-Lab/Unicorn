@@ -131,7 +131,7 @@ type Hotstuff interface {
 	Engine
 
 	// Start starts the engine
-	Start(chain ChainReader, currentBlock func() *types.Block) error
+	Start(chain ChainReader, currentBlock func() *types.Block, getBlockByHash func(hash common.Hash) *types.Block) error
 
 	// Stop stops the engine
 	Stop() error

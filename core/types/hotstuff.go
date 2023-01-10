@@ -37,10 +37,11 @@ var (
 )
 
 type HotstuffExtra struct {
-	Validators               []common.Address
-	LeaderSeal               []byte
-	AggregatedValidatorsSeal []byte
-	Salt                     []byte // omit empty
+	Validators               []common.Address // consensus participants address of the current block
+	LeaderSeal               []byte           // proposer seal
+	AggregatedValidatorsSeal []byte           // aggregated 2f+1 validators' seals
+	ParticipantsIndex        []int            // index of 2f+1 validators that participate in the seal process
+	Salt                     []byte           // omit empty
 }
 
 // EncodeRLP serializes ist into the Ethereum RLP format.

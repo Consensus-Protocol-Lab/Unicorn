@@ -19,8 +19,8 @@ package node
 import (
 	"crypto/ecdsa"
 	"fmt"
-	"github.com/prysmaticlabs/prysm/v3/crypto/rand"
-	blst "github.com/supranational/blst/bindings/go"
+	"github.com/prysmaticlabs/prysm/v3/crypto/bls/blst"
+	common2 "github.com/prysmaticlabs/prysm/v3/crypto/bls/common"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -386,18 +386,12 @@ func (c *Config) NodeKey() *ecdsa.PrivateKey {
 // ConsensusKey retrieves the currently configured bls consensus key of the node, checking
 // first any manually set key, falling back to the one found in the configured
 // data folder. If no key can be found, a new one is generated.
-func (c *Config) ConsensusKey() *blst.SecretKey {
+func (c *Config) ConsensusKey() *common2.SecretKey {
 	// Hotstuff ToDo:
 	// mange consensus key
 	// Generate 32 bytes of randomness
-	var ikm [32]byte
-	_, err := rand.NewGenerator().Read(ikm[:])
-	if err != nil {
-		return nil
-	}
-	// Defensive check, that we have not generated a secret key,
-	secKey := blst.KeyGen(ikm[:])
-	return secKey
+	sk, _ := blst.RandKey()
+	return &sk
 }
 
 // StaticNodes returns a list of node enode URLs configured as static nodes.
